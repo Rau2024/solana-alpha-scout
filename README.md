@@ -1,8 +1,8 @@
-# Solana Alpha Scout 🕵️‍♂️⚡
+# Solana Alpha Scout 🕵️‍♂️
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-14F195.svg)](LICENSE)
-[![Solana](https://img.shields.io/badge/Solana-devnet-9945FF)](https://solana.com)
-[![Hackathon](https://img.shields.io/badge/Colosseum-2026-14F195)](https://colosseum.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-6366f1?style=for-the-badge)](LICENSE)
+[![Solana](https://img.shields.io/badge/Solana-Agent-10b981?style=for-the-badge&logo=solana&logoColor=white)](https://solana.com)
+[![Hackathon](https://img.shields.io/badge/Colosseum-Hackathon-a855f7?style=for-the-badge)](https://colosseum.org)
 
 > An autonomous AI agent that filters Web3 noise, scores trends deterministically, and executes on-chain swaps directly on Solana.
 
