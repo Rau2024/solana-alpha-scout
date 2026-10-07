@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Alpha Scout</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Navigation -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-brands fa-space-awesome fa-spin-pulse"></i>
+                </div>
+                <div>
+                    <h1>Solana Alpha Scout</h1>
+                    <span class="subtitle">Web3 & Solana Trend Analytics</span>
+                </div>
+            </div>
+            <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+                <div class="system-status" id="health-badge">
+                    <span class="status-dot"></span> Checking API...
+                </div>
+                <button id="btn-connect-wallet" class="btn btn-primary" style="padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
+                    <i class="fa-solid fa-wallet"></i> Connect Phantom
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="dashboard-grid">
+            <!-- Left Side: Controls & Metric Analytics -->
+            <section class="left-column">
+                <!-- Control Panel Card -->
+                <div class="card glass-card control-panel-card">
+                    <h2><i class="fa-solid fa-sliders"></i> Scout Settings</h2>
+                    <div class="input-group">
+                        <label for="topic-input">Project/Token Keyword</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="topic-input" placeholder="e.g. solana, defi, depin, raydium..." value="solana">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="limit-input">Scan Limit (Top Stories)</label>
+                        <div class="range-slider-wrapper">
+                            <input type="range" id="limit-input" min="10" max="100" step="5" value="30">
+                            <span class="range-value" id="limit-val">30</span>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button id="btn-raw" class="btn btn-secondary">
+                            <i class="fa-solid fa-database"></i> Fetch Raw
+                        </button>
+                        <button id="btn-analyze" class="btn btn-secondary">
+                            <i class="fa-solid fa-chart-line"></i> Analyze
+                        </button>
+                        <button id="btn-report" class="btn btn-primary">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- On-Chain Data Panel (DexScreener) -->
+                <div id="onchain-panel" class="card glass-card metrics-card hidden" style="border: 1px solid #10b981;">
+                    <h2 style="color: #10b981;"><i class="fa-solid fa-bolt"></i> On-Chain Alpha</h2>
+                    <div id="dex-content" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- KPI Metric Panel (Hidden at start until analyze/report clicked) -->
+                <div id="metrics-panel" class="card glass-card metrics-card hidden">
+                    <h2><i class="fa-solid fa-chart-simple"></i> Trend Overview</h2>
+                    <div class="metrics-grid">
+                        <div class="metric-box score-box">
+                            <span class="metric-label">Trend Score</span>
+                            <div class="score-circle">
+                                <svg class="progress-ring" width="100" height="100">
+                                    <circle class="progress-ring__background" stroke="#1b253b" stroke-width="8" fill="transparent" r="42" cx="50" cy="50"/>
+                                    <circle class="progress-ring__circle" stroke="url(#gradient)" stroke-width="8" fill="transparent" r="42" cx="50" cy="50"/>
+                                    <defs>
+                                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#6366f1" />
+                                            <stop offset="100%" stop-color="#a855f7" />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                                <div class="score-text" id="trend-score-value">0</div>
+                            </div>
+                        </div>
+                        <div class="metric-box info-box">
+                            <span class="metric-label">Grade</span>
+                            <span class="metric-value grade-badge" id="trend-grade">N/A</span>
+                        </div>
+                        <div class="metric-box info-box">
+                            <span class="metric-label">Relevant / Scanned</span>
+                            <span class="metric-value" id="match-ratio">0 / 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signals & Risks (Hidden at start) -->
+                <div id="signals-risks-panel" class="signals-risks-container hidden">
+                    <div class="card glass-card signals-card">
+                        <h3><i class="fa-solid fa-circle-check text-success"></i> Key Signals</h3>
+                        <ul id="signals-list" class="styled-list success-list">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                    <div class="card glass-card risks-card">
+                        <h3><i class="fa-solid fa-triangle-exclamation text-warning"></i> Risks & Limitations</h3>
+                        <ul id="risks-list" class="styled-list warning-list">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Details & Report Content -->
+            <section class="right-column">
+                <!-- Welcome Placeholder / Loading Overlay -->
+                <div id="status-placeholder" class="card glass-card info-placeholder">
+                    <div class="placeholder-content">
+                        <i class="fa-solid fa-satellite-dish fa-bounce placeholder-icon"></i>
+                        <h3>Scout Idle</h3>
+                        <p>Enter a Web3 topic (like "solana" or "defi") and generate a report to discover trending alpha.</p>
+                    </div>
+                </div>
+
+                <!-- LLM Report Card (Hidden at start) -->
+                <div id="report-panel" class="card glass-card report-card hidden">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-feather-pointed"></i> AI Trend Explanation</h2>
+                        <button id="btn-copy-report" class="btn btn-icon" title="Copy report text">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="report-content markdown-body" id="llm-report-text">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Relevant / All Stories Card (Hidden at start) -->
+                <div id="stories-panel" class="card glass-card stories-card hidden">
+                    <div class="stories-header">
+                        <h2><i class="fa-solid fa-list-ul"></i> Web3 Alpha Sources</h2>
+                        <div class="tabs">
+                            <button id="tab-relevant" class="tab-btn active">Relevant Signals</button>
+                            <button id="tab-all" class="tab-btn">All Sources</button>
+                        </div>
+                    </div>
+                    <div class="stories-list-wrapper" id="stories-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- API Response JSON Viewer -->
+                <div id="json-panel" class="card glass-card json-card hidden">
+                    <div class="json-header">
+                        <h2><i class="fa-solid fa-code"></i> API JSON Payload</h2>
+                        <button id="btn-copy-json" class="btn btn-icon" title="Copy raw JSON">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <pre><code class="json-code" id="json-renderer"></code></pre>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>
