@@ -366,6 +366,13 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Please enter a topic keyword.");
             return;
         }
+        
+        // Prevent Ethereum/BSC addresses
+        if (topic.startsWith("0x")) {
+            alert("⚠️ Invalid chain detected. Please enter a valid Solana contract address or token keyword.");
+            return;
+        }
+        
         setGlobalLoading(true);
         topic = await resolveTopic(topic);
 
@@ -442,6 +449,13 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Please enter a topic keyword.");
             return;
         }
+        
+        // Prevent Ethereum/BSC addresses
+        if (topic.startsWith("0x")) {
+            alert("⚠️ Invalid chain detected. Please enter a valid Solana contract address or token keyword.");
+            return;
+        }
+        
         setGlobalLoading(true);
         topic = await resolveTopic(topic);
 
