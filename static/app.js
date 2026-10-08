@@ -337,15 +337,37 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Helper to resolve contract address to token symbol
+    async function resolveTopic(inputTopic) {
+        // If it looks like a Solana contract address (usually 43-44 chars)
+        if (inputTopic.length > 30) {
+            try {
+                const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(inputTopic)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const solPairs = data.pairs?.filter(p => p.chainId === "solana");
+                    if (solPairs && solPairs.length > 0) {
+                        // Return the actual token symbol (e.g., JUP)
+                        return solPairs[0].baseToken.symbol;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to resolve token address", e);
+            }
+        }
+        return inputTopic;
+    }
+
     // Action 2: Analyze Topic Relevance
     btnAnalyze.addEventListener("click", async () => {
         const limit = limitInput.value;
-        const topic = topicInput.value.trim();
+        let topic = topicInput.value.trim();
         if (!topic) {
             alert("Please enter a topic keyword.");
             return;
         }
         setGlobalLoading(true);
+        topic = await resolveTopic(topic);
 
         try {
             const res = await fetch(`/hn/analyze?topic=${encodeURIComponent(topic)}&limit=${limit}`);
@@ -413,12 +435,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Action 3: Generate AI Explanation Report
     btnReport.addEventListener("click", async () => {
         const limit = limitInput.value;
-        const topic = topicInput.value.trim();
+        let topic = topicInput.value.trim();
+        const originalTopic = topic; // Keep original for DexScreener fetch later
+        
         if (!topic) {
             alert("Please enter a topic keyword.");
             return;
         }
         setGlobalLoading(true);
+        topic = await resolveTopic(topic);
 
         try {
             const res = await fetch(`/hn/llm-report?topic=${encodeURIComponent(topic)}&limit=${limit}`);
@@ -477,7 +502,7 @@ document.addEventListener("DOMContentLoaded", () => {
             storiesPanel.classList.remove("hidden");
 
             // Fetch DexScreener Data
-            fetchDexScreenerData(topic);
+            fetchDexScreenerData(originalTopic);
 
             // Populate JSON UI
             jsonRenderer.textContent = JSON.stringify(data, null, 2);
