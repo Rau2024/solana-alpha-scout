@@ -6,7 +6,7 @@
 
 > An autonomous AI agent that filters Web3 noise, scores trends deterministically, and executes on-chain swaps directly on Solana.
 
-[Live Demo](#) · [Video Walkthrough](#) · [Pitch Deck](#) 
+[Live Demo](https://solana-alpha-scout.onrender.com/) · [Video Walkthrough](#) · [Pitch Deck](#) 
 
 ---
 
