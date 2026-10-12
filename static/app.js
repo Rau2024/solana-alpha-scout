@@ -136,20 +136,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1500);
     }
 
-    // Tabs control
-    tabRelevant.addEventListener("click", () => {
-        activeTab = "relevant";
-        tabRelevant.classList.add("active");
-        tabAll.classList.remove("active");
-        renderStories();
-    });
+    // Tabs control (if present)
+    if (tabRelevant) {
+        tabRelevant.addEventListener("click", () => {
+            activeTab = "relevant";
+            tabRelevant.classList.add("active");
+            if (tabAll) tabAll.classList.remove("active");
+            renderStories();
+        });
+    }
 
-    tabAll.addEventListener("click", () => {
-        activeTab = "all";
-        tabAll.classList.add("active");
-        tabRelevant.classList.remove("active");
-        renderStories();
-    });
+    if (tabAll) {
+        tabAll.addEventListener("click", () => {
+            activeTab = "all";
+            tabAll.classList.add("active");
+            if (tabRelevant) tabRelevant.classList.remove("active");
+            renderStories();
+        });
+    }
 
     // Simple Markdown Parser
     function parseMarkdown(md) {
@@ -232,16 +236,14 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
-    // Render hacker news stories
+    // Render news stories
     function renderStories() {
         storiesList.innerHTML = "";
         
-        const filtered = activeTab === "relevant" 
-            ? currentStories.filter(s => s.is_relevant)
-            : currentStories;
+        const filtered = currentStories.filter(s => s.is_relevant);
 
         if (filtered.length === 0) {
-            storiesList.innerHTML = `<div class="no-stories-message">No ${activeTab === "relevant" ? "relevant" : ""} stories found.</div>`;
+            storiesList.innerHTML = `<div class="no-stories-message">No relevant stories found.</div>`;
             return;
         }
 
@@ -249,16 +251,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const story = item.story;
             const timeAgo = formatTimeAgo(story.time);
             const domain = story.url ? new URL(story.url).hostname : "Web3 News";
-            const relevanceBadge = item.is_relevant 
-                ? `<span class="badge badge-relevance">Relevant</span>` 
-                : `<span class="badge badge-irrelevance">Skipped</span>`;
 
             const row = document.createElement("div");
             row.className = "story-row";
             row.innerHTML = `
                 <div class="story-details">
                     <div class="story-title">
-                        <a href="${story.url || `https://news.ycombinator.com/item?id=${story.id}`}" target="_blank">${escapeHtml(story.title || "Untitled")}</a>
+                        <a href="${story.url || `https://solana.com`}" target="_blank">${escapeHtml(story.title || "Untitled")}</a>
                     </div>
                     <div class="story-meta">
                         <span><i class="fa-solid fa-user"></i> ${escapeHtml(story.by || "none")}</span>
@@ -267,9 +266,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         <span><i class="fa-solid fa-clock"></i> ${timeAgo}</span>
                         <span><i class="fa-solid fa-globe"></i> ${domain}</span>
                     </div>
-                </div>
-                <div class="story-badges">
-                    ${relevanceBadge}
                 </div>
             `;
             storiesList.appendChild(row);
@@ -514,10 +510,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Populate Stories
             currentStories = data.analysis.stories;
-            tabRelevant.classList.remove("disabled");
-            tabRelevant.classList.add("active");
-            tabAll.classList.remove("active");
-            activeTab = "relevant";
             renderStories();
             storiesPanel.classList.remove("hidden");
 
