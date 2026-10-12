@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+import urllib.parse
 import xml.etree.ElementTree as ET
 from typing import Any
 import httpx
@@ -18,8 +19,9 @@ async def fetch_top_stories(limit: int, topic: str = "solana", timeout_seconds: 
         return []
 
     async with httpx.AsyncClient(follow_redirects=True) as client:
-        # Use Google News RSS to get real Web3 / Alpha news
-        rss_url = f"https://news.google.com/rss/search?q={topic}&hl=en-US&gl=US&ceid=US:en"
+        # Always scope search to Solana & Crypto so terms like "Jupiter" don't return NASA planet news
+        search_query = f"{topic} solana crypto" if "solana" not in topic.lower() else f"{topic} crypto"
+        rss_url = f"https://news.google.com/rss/search?q={urllib.parse.quote(search_query)}&hl=en-US&gl=US&ceid=US:en"
         try:
             response = await client.get(
                 rss_url, 
@@ -32,6 +34,8 @@ async def fetch_top_stories(limit: int, topic: str = "solana", timeout_seconds: 
             xml_data = response.text
             root = ET.fromstring(xml_data)
             items = root.findall('.//item')
+            if not items:
+                return _get_fallback_stories(limit, topic)
         except Exception as exc:
             logger.warning(f"News fetch failed ({exc}), activating resilient Web3 fallback feed.")
             return _get_fallback_stories(limit, topic)
@@ -71,7 +75,11 @@ async def fetch_top_stories(limit: int, topic: str = "solana", timeout_seconds: 
                 logger.error(f"Error parsing news item: {exc}")
                 continue
 
-        return stories
+        if len(stories) < 6:
+            fallback = _get_fallback_stories(limit - len(stories), topic)
+            stories.extend(fallback)
+
+        return stories[:limit]
 
 
 def _get_fallback_stories(limit: int, topic: str) -> list[HNStoryRaw]:

@@ -341,23 +341,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Helper to resolve contract address to token symbol
     async function resolveTopic(inputTopic) {
-        // If it looks like a Solana contract address (usually 43-44 chars)
-        if (inputTopic.length > 30) {
+        const clean = inputTopic.trim();
+        const lower = clean.toLowerCase();
+        if (clean.startsWith("JUPyiwr")) return "Jupiter";
+        if (clean.startsWith("EKpQGS")) return "dogwifhat";
+        if (clean.startsWith("DezXAZ")) return "Bonk";
+        if (clean.startsWith("So1111")) return "Solana";
+        // CoinMarketCap listed cross-chain contracts for Solana (Base, BSC, Ethereum)
+        if (lower.startsWith("0x311935") || lower.startsWith("0x570a5d") || lower.startsWith("0xd31a59")) {
+            return "Solana";
+        }
+
+        // If it looks like any contract address (Solana Base58 32-44 chars or EVM 0x 42 chars)
+        if (clean.length >= 32 && !clean.includes(" ")) {
             try {
-                const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(inputTopic)}`);
+                const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(clean)}`);
                 if (res.ok) {
                     const data = await res.json();
-                    const solPairs = data.pairs?.filter(p => p.chainId === "solana");
-                    if (solPairs && solPairs.length > 0) {
-                        // Return the actual token symbol (e.g., JUP)
-                        return solPairs[0].baseToken.symbol;
+                    const pairs = data.pairs || [];
+                    const solPairs = pairs.filter(p => p.chainId === "solana");
+                    const poolList = solPairs.length > 0 ? solPairs : pairs;
+
+                    if (poolList.length > 0) {
+                        // Sort by highest liquidity so we always get the canonical token
+                        poolList.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+                        const top = poolList[0];
+                        // Check if the searched address is the quoteToken instead of baseToken
+                        const targetToken = (top.quoteToken?.address?.toLowerCase() === lower)
+                            ? top.quoteToken
+                            : top.baseToken;
+
+                        if (targetToken?.symbol?.toUpperCase() === "SOL" || targetToken?.name?.toLowerCase().includes("solana")) {
+                            return "Solana";
+                        }
+                        // Prefer readable name for news search if symbol is very short, or return symbol
+                        return targetToken?.name || targetToken?.symbol || "Solana";
                     }
                 }
             } catch (e) {
                 console.error("Failed to resolve token address", e);
             }
+            return "Solana";
         }
-        return inputTopic;
+        return clean;
     }
 
     // Action 2: Analyze Topic Relevance
@@ -367,12 +393,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let topic = topicInput.value.trim();
         if (!topic) {
             alert("Please enter a topic keyword.");
-            return;
-        }
-        
-        // Prevent Ethereum/BSC addresses
-        if (topic.startsWith("0x")) {
-            alert("⚠️ Invalid chain detected. Please enter a valid Solana contract address or token keyword.");
             return;
         }
         
@@ -454,12 +474,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         
-        // Prevent Ethereum/BSC addresses
-        if (topic.startsWith("0x")) {
-            alert("⚠️ Invalid chain detected. Please enter a valid Solana contract address or token keyword.");
-            return;
-        }
-        
         setGlobalLoading(true);
         topic = await resolveTopic(topic);
 
@@ -516,7 +530,7 @@ document.addEventListener("DOMContentLoaded", () => {
             storiesPanel.classList.remove("hidden");
 
             // Fetch DexScreener Data
-            fetchDexScreenerData(originalTopic);
+            fetchDexScreenerData(originalTopic, topic);
 
             // Populate JSON UI
             if (jsonRenderer) jsonRenderer.textContent = JSON.stringify(data, null, 2);
@@ -529,22 +543,44 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    async function fetchDexScreenerData(topic) {
+    async function fetchDexScreenerData(topic, resolvedSymbol) {
         const onchainPanel = document.getElementById("onchain-panel");
         const dexContent = document.getElementById("dex-content");
         
+        let queryTopic = topic.trim();
+        const lower = queryTopic.toLowerCase();
+        if (queryTopic.startsWith("JUPyiwr")) queryTopic = "JUPyiwrYJFskUPiHa7hkeR8VUTAeFoSYbKedZNsDvCN";
+        else if (queryTopic.startsWith("EKpQGS")) queryTopic = "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm";
+        else if (queryTopic.startsWith("DezXAZ")) queryTopic = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
+        else if (
+            queryTopic.startsWith("So1111") ||
+            lower === "solana" ||
+            lower === "sol" ||
+            lower.startsWith("0x311935") ||
+            lower.startsWith("0x570a5d") ||
+            lower.startsWith("0xd31a59") ||
+            resolvedSymbol?.toLowerCase() === "solana" ||
+            resolvedSymbol?.toUpperCase() === "SOL"
+        ) {
+            queryTopic = "So11111111111111111111111111111111111111112";
+        } else if (lower.startsWith("0x") && resolvedSymbol) {
+            queryTopic = resolvedSymbol;
+        }
+        
         try {
-            const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(topic)}`);
+            const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(queryTopic)}`);
             if (!res.ok) return;
             const data = await res.json();
             
-            // Filter for Solana pairs
-            const solPairs = data.pairs?.filter(p => p.chainId === "solana");
-            
-            if (solPairs && solPairs.length > 0) {
+            // Filter for Solana pairs and sort by liquidity so official pools always win
+            let solPairs = (data.pairs || []).filter(p => p.chainId === "solana");
+            if (solPairs.length > 0) {
+                solPairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
                 const topPair = solPairs[0];
-                const price = parseFloat(topPair.priceUsd).toFixed(4);
-                const fdv = (topPair.fdv || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+                const rawPrice = parseFloat(topPair.priceUsd || 0);
+                const price = rawPrice < 0.01 && rawPrice > 0 ? rawPrice.toPrecision(4) : rawPrice.toFixed(4);
+                const rawFdv = topPair.fdv || topPair.marketCap || solPairs.find(p => p.fdv)?.fdv || topPair.liquidity?.usd || 0;
+                const fdv = rawFdv.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
                 const volume24h = (topPair.volume?.h24 || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
                 const change24h = topPair.priceChange?.h24 || 0;
                 const changeColor = change24h >= 0 ? "#10b981" : "#ef4444";

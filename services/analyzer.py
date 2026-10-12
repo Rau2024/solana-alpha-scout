@@ -14,7 +14,9 @@ def analyze_trends(stories: list[HNStoryRaw], topic: str, limit: int) -> HNTrend
         relevance_reasons = []
 
         # Check title
-        if story.title and topic_clean in story.title.lower():
+        title_lower = (story.title or "").lower()
+        keywords = [w for w in topic_clean.split() if len(w) >= 2] + ["solana", "jupiter", "defi", "crypto", "token", "dex", "web3", "protocol"]
+        if story.title and (topic_clean in title_lower or any(k in title_lower for k in keywords)):
             is_relevant = True
             relevance_reasons.append("Topic found in story title")
 
