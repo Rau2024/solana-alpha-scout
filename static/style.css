@@ -133,6 +133,43 @@ body {
     box-shadow: 0 0 8px var(--danger);
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+@media (max-width: 640px) {
+    .app-container {
+        padding: 12px;
+    }
+    .app-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        padding: 16px;
+    }
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        gap: 8px;
+    }
+    .brand h1 {
+        font-size: 1.25rem;
+    }
+    #btn-connect-wallet {
+        font-size: 0.82rem;
+        padding: 0.45rem 0.85rem !important;
+        white-space: nowrap;
+    }
+    .system-status {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+}
+
 /* Dashboard Grid Layout */
 .dashboard-grid {
     display: grid;
