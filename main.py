@@ -11,7 +11,7 @@ from services.llm_client import generate_llm_report, LLMClientError, settings as
 
 
 class Settings(BaseSettings):
-    hn_request_timeout_seconds: float = 5.0
+    hn_request_timeout_seconds: float = 12.0
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
