@@ -119,12 +119,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    btnCopyJson.addEventListener("click", () => {
-        if (jsonRenderer.textContent) {
-            navigator.clipboard.writeText(jsonRenderer.textContent);
-            showToast(btnCopyJson, "Copied!");
-        }
-    });
+    if (btnCopyJson) {
+        btnCopyJson.addEventListener("click", () => {
+            if (jsonRenderer && jsonRenderer.textContent) {
+                navigator.clipboard.writeText(jsonRenderer.textContent);
+                showToast(btnCopyJson, "Copied!");
+            }
+        });
+    }
 
     function showToast(button, text) {
         const originalHTML = button.innerHTML;
@@ -214,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
             signalsRisksPanel.classList.add("hidden");
             reportPanel.classList.add("hidden");
             storiesPanel.classList.add("hidden");
-            jsonPanel.classList.add("hidden");
+            if (jsonPanel) jsonPanel.classList.add("hidden");
         }
     }
 
@@ -327,8 +329,8 @@ document.addEventListener("DOMContentLoaded", () => {
             storiesPanel.classList.remove("hidden");
             
             // Populate JSON UI
-            jsonRenderer.textContent = JSON.stringify(data, null, 2);
-            jsonPanel.classList.remove("hidden");
+            if (jsonRenderer) jsonRenderer.textContent = JSON.stringify(data, null, 2);
+            if (jsonPanel) jsonPanel.classList.remove("hidden");
 
         } catch (err) {
             showError(err.message);
@@ -429,8 +431,8 @@ document.addEventListener("DOMContentLoaded", () => {
             storiesPanel.classList.remove("hidden");
 
             // Populate JSON UI
-            jsonRenderer.textContent = JSON.stringify(data, null, 2);
-            jsonPanel.classList.remove("hidden");
+            if (jsonRenderer) jsonRenderer.textContent = JSON.stringify(data, null, 2);
+            if (jsonPanel) jsonPanel.classList.remove("hidden");
 
         } catch (err) {
             showError(err.message);
@@ -519,8 +521,8 @@ document.addEventListener("DOMContentLoaded", () => {
             fetchDexScreenerData(originalTopic);
 
             // Populate JSON UI
-            jsonRenderer.textContent = JSON.stringify(data, null, 2);
-            jsonPanel.classList.remove("hidden");
+            if (jsonRenderer) jsonRenderer.textContent = JSON.stringify(data, null, 2);
+            if (jsonPanel) jsonPanel.classList.remove("hidden");
 
         } catch (err) {
             showError(err.message);
