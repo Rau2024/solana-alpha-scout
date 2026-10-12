@@ -194,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Set Loading states
     function setGlobalLoading(isLoading) {
-        const buttons = [btnRaw, btnAnalyze, btnReport];
+        const buttons = [btnRaw, btnAnalyze, btnReport].filter(Boolean);
         buttons.forEach(btn => {
             if (isLoading) {
                 btn.classList.add("disabled");
@@ -299,45 +299,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Action 1: Raw Stories Fetch
-    btnRaw.addEventListener("click", async () => {
-        const limit = limitInput.value;
-        setGlobalLoading(true);
+    if (btnRaw) {
+        btnRaw.addEventListener("click", async () => {
+            const limit = limitInput.value;
+            setGlobalLoading(true);
 
-        try {
-            const res = await fetch(`/hn/raw?limit=${limit}`);
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.detail || `Server returned ${res.status}`);
+            try {
+                const res = await fetch(`/hn/raw?limit=${limit}`);
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.detail || `Server returned ${res.status}`);
+                }
+                const data = await res.json();
+                lastResponseJson = data;
+
+                statusPlaceholder.classList.add("hidden");
+                
+                // Populate Stories UI
+                currentStories = data.stories.map(story => ({
+                    story: story,
+                    is_relevant: false,
+                    relevance_reasons: []
+                }));
+                activeTab = "all";
+                tabRelevant.classList.remove("active");
+                tabRelevant.classList.add("disabled");
+                tabAll.classList.add("active");
+                
+                renderStories();
+                storiesPanel.classList.remove("hidden");
+                
+                // Populate JSON UI
+                if (jsonRenderer) jsonRenderer.textContent = JSON.stringify(data, null, 2);
+                if (jsonPanel) jsonPanel.classList.remove("hidden");
+
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                setGlobalLoading(false);
             }
-            const data = await res.json();
-            lastResponseJson = data;
-
-            statusPlaceholder.classList.add("hidden");
-            
-            // Populate Stories UI
-            currentStories = data.stories.map(story => ({
-                story: story,
-                is_relevant: false,
-                relevance_reasons: []
-            }));
-            activeTab = "all";
-            tabRelevant.classList.remove("active");
-            tabRelevant.classList.add("disabled");
-            tabAll.classList.add("active");
-            
-            renderStories();
-            storiesPanel.classList.remove("hidden");
-            
-            // Populate JSON UI
-            if (jsonRenderer) jsonRenderer.textContent = JSON.stringify(data, null, 2);
-            if (jsonPanel) jsonPanel.classList.remove("hidden");
-
-        } catch (err) {
-            showError(err.message);
-        } finally {
-            setGlobalLoading(false);
-        }
-    });
+        });
+    }
 
     // Helper to resolve contract address to token symbol
     async function resolveTopic(inputTopic) {
@@ -361,7 +363,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Action 2: Analyze Topic Relevance
-    btnAnalyze.addEventListener("click", async () => {
+    if (btnAnalyze) {
+        btnAnalyze.addEventListener("click", async () => {
         const limit = limitInput.value;
         let topic = topicInput.value.trim();
         if (!topic) {
@@ -440,6 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setGlobalLoading(false);
         }
     });
+    }
 
     // Action 3: Generate AI Explanation Report
     btnReport.addEventListener("click", async () => {
