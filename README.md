@@ -6,7 +6,7 @@
 
 > An autonomous AI agent that filters Web3 noise, scores trends deterministically, and executes on-chain swaps directly on Solana.
 
-[Live Demo](https://solana-alpha-scout.onrender.com/) · [Video Walkthrough](#) · [Pitch Deck](#) 
+[Live Demo](https://solana-alpha-scout.onrender.com/) · [Docs](docs/architecture.md) · [Colosseum Arena](https://colosseum.com/arena/projects/solana-alpha-scout) · [Video Walkthrough](#) · [Pitch Deck](#) 
 
 ---
 
@@ -70,7 +70,19 @@ Open your browser at `http://localhost:8000`.
 
 ---
 
-## 🔮 Future Roadmap (Post-Hackathon)
-*   **Solana Pay**: Gate premium deep-dive token risk analysis using micro-transactions (USDC).
-*   **Telegram Bot Alerts**: Push notifications for tokens crossing a specific "Hype Score".
-*   **Solana AI Kit**: Allow the agent to execute limit orders directly on-chain using a managed wallet.
+## 🏛️ Architecture
+See [docs/architecture.md](docs/architecture.md) for full component breakdown and latency benchmarks.
+
+---
+
+## 🔮 Roadmap
+- [x] v1.0 — Colosseum Hackathon MVP (Current)
+- [ ] v1.1 — Mainnet Alpha & Social Streaming
+- [ ] v2.0 — Autonomous Agentic Execution via Solana Agent Kit
+
+Full roadmap: [docs/roadmap.md](docs/roadmap.md)
+
+---
+
+## 📄 License
+MIT — see [LICENSE](LICENSE)
