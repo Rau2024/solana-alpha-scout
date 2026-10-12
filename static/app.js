@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch("/health");
             const data = await res.json();
             if (res.ok && data.status === "ok") {
-                healthBadge.innerHTML = `<span class="status-dot online"></span> API: online (${data.llm_provider})`;
+                healthBadge.innerHTML = `<span class="status-dot online"></span> Live`;
             } else {
                 showOfflineBadge();
             }
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function showOfflineBadge() {
-        healthBadge.innerHTML = `<span class="status-dot offline"></span> API: offline`;
+        healthBadge.innerHTML = `<span class="status-dot offline"></span> Offline`;
     }
 
     // Copy to Clipboard utils
