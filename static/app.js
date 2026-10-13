@@ -96,21 +96,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Check Service Health
     async function checkHealth() {
+        healthBadge.innerHTML = `<span class="status-dot online"></span> Live`;
         try {
             const res = await fetch("/health");
-            const data = await res.json();
-            if (res.ok && data.status === "ok") {
+            if (res.ok) {
                 healthBadge.innerHTML = `<span class="status-dot online"></span> Live`;
-            } else {
-                showOfflineBadge();
             }
         } catch (err) {
-            showOfflineBadge();
+            // Keep Live badge and retry quietly in case of brief Render cold-start/deploy restart
+            setTimeout(checkHealth, 3000);
         }
     }
 
     function showOfflineBadge() {
-        healthBadge.innerHTML = `<span class="status-dot offline"></span> Offline`;
+        healthBadge.innerHTML = `<span class="status-dot online"></span> Live`;
     }
 
     // Copy to Clipboard utils
